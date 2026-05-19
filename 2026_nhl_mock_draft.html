@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 NHL Mock Draft</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ice: #e8f4f8;
+    --deep: #0a1628;
+    --navy: #0d2040;
+    --blue: #1a4a8a;
+    --accent: #3a8fe8;
+    --gold: #f0a500;
+    --silver: #b0bec5;
+    --text: #e2eaf4;
+    --muted: #7a9bb5;
+    --border: rgba(58, 143, 232, 0.2);
+    --d-color: #a78bfa;
+    --f-color: #38bdf8;
+    --g-color: #4ade80;
+  }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--deep);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* rink line texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 60px,
+        rgba(58, 143, 232, 0.04) 60px,
+        rgba(58, 143, 232, 0.04) 61px
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 32px 64px;
+  }
+
+  /* Header */
+  .header {
+    border-left: 4px solid var(--gold);
+    padding-left: 20px;
+    margin-bottom: 40px;
+  }
+
+  .header-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .header-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+
+  .header-sub {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+
+  /* Tier labels */
+  .tier-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 0 6px;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 0;
+  }
+
+  /* Table header */
+  .table-header {
+    display: grid;
+    grid-template-columns: 48px 54px 180px 1fr 110px;
+    gap: 12px;
+    padding: 10px 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+
+  /* Pick rows */
+  .pick {
+    display: grid;
+    grid-template-columns: 48px 54px 180px 1fr 110px;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 0.5px solid rgba(58, 143, 232, 0.1);
+    align-items: center;
+    transition: background 0.15s;
+  }
+
+  .pick:hover { background: rgba(58, 143, 232, 0.06); }
+
+  .pick.tier1 { background: rgba(240, 165, 0, 0.04); }
+  .pick.tier1:hover { background: rgba(240, 165, 0, 0.09); }
+
+  .pick-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1;
+  }
+  .pick.tier1 .pick-num { color: var(--gold); }
+
+  .team-abbr {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+  }
+  .team-full {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+  }
+
+  .prospect-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+  }
+  .prospect-meta {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+    letter-spacing: 0.02em;
+  }
+
+  .pos-badge {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .pos-badge.f { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 0.5px solid rgba(56,189,248,0.3); }
+  .pos-badge.d { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 0.5px solid rgba(167,139,250,0.3); }
+
+  /* Confidence bar */
+  .conf-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .conf-track {
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .conf-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+  .pick.tier1 .conf-fill { background: var(--gold); }
+
+  /* Note box */
+  .note-box {
+    margin-top: 36px;
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    background: rgba(58, 143, 232, 0.04);
+  }
+  .note-box strong { color: var(--text); font-weight: 600; }
+
+  /* Footer */
+  .footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 0.5px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 0.04em;
+  }
+
+  @media print {
+    body { background: #fff; color: #111; }
+    body::before { display: none; }
+    .pick:hover { background: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-eyebrow">NHL Entry Draft · June 26–27, 2026 · Buffalo, NY</div>
+    <div class="header-title">2026 NHL<br>Mock Draft</div>
+    <div class="header-sub">First round prediction · Picks 1–16 set by lottery · KeyBank Center</div>
+  </div>
+
+  <div class="table-header">
+    <span>#</span>
+    <span>Team</span>
+    <span>Prospect</span>
+    <span>Info</span>
+    <span>Confidence</span>
+  </div>
+
+  <!-- TIER 1 -->
+  <div class="tier-label">Tier 1 — Elite</div>
+
+  <div class="pick tier1">
+    <div class="pick-num">1</div>
+    <div><div class="team-abbr">TOR</div><div class="team-full">Maple Leafs</div></div>
+    <div>
+      <div class="prospect-name">Gavin McKenna</div>
+      <div class="prospect-meta">LW · Penn State (NCAA) · 6'0" · 170 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">McKenna or Stenberg; McKenna widely favoured. 51 pts in 35 NCAA games.</div>
+    <div>
+      <div class="conf-label">Very high — 92%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:92%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick tier1">
+    <div class="pick-num">2</div>
+    <div><div class="team-abbr">SJS</div><div class="team-full">Sharks</div></div>
+    <div>
+      <div class="prospect-name">Chase Reid</div>
+      <div class="prospect-meta">RD · Sault Ste. Marie (OHL) · 6'2" · 187 lbs</div>
+      <span class="pos-badge d">Defence</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Sharks need D depth. Puck-moving RHD; Evan Bouchard comp. Stenberg also possible.</div>
+    <div>
+      <div class="conf-label">High — 72%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:72%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick tier1">
+    <div class="pick-num">3</div>
+    <div><div class="team-abbr">VAN</div><div class="team-full">Canucks</div></div>
+    <div>
+      <div class="prospect-name">Ivar Stenberg</div>
+      <div class="prospect-meta">LW/RW · Frölunda HC (SHL) · 6'0" · 181 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Fell from expected top-2. Swedish forward with top-line upside. William Nylander comp.</div>
+    <div>
+      <div class="conf-label">Moderate-high — 65%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:65%"></div></div>
+    </div>
+  </div>
+
+  <!-- TIER 2 -->
+  <div class="tier-label">Tier 2 — Top-pair / Top-line upside</div>
+
+  <div class="pick">
+    <div class="pick-num">4</div>
+    <div><div class="team-abbr">CHI</div><div class="team-full">Blackhawks</div></div>
+    <div>
+      <div class="prospect-name">Keaton Verhoeff</div>
+      <div class="prospect-meta">RD · North Dakota (NCAA) · 6'1" · 192 lbs</div>
+      <span class="pos-badge d">Defence</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Once considered top-2. Two-way D from North Dakota. Malhotra also in play.</div>
+    <div>
+      <div class="conf-label">Moderate — 58%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:58%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">5</div>
+    <div><div class="team-abbr">NYR</div><div class="team-full">Rangers</div></div>
+    <div>
+      <div class="prospect-name">Alberts Smits</div>
+      <div class="prospect-meta">LD · Jukurit/München (Liiga/DEL) · 6'3" · 205 lbs</div>
+      <span class="pos-badge d">Defence</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Youngest player at 2026 Winter Olympics. High upside, elite size and skating.</div>
+    <div>
+      <div class="conf-label">Moderate — 52%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:52%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">6</div>
+    <div><div class="team-abbr">CGY</div><div class="team-full">Flames</div></div>
+    <div>
+      <div class="prospect-name">Daxon Rudolph</div>
+      <div class="prospect-meta">RD · Saskatoon (WHL) · 6'2" · 190 lbs</div>
+      <span class="pos-badge d">Defence</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Elite skater and puck mover. Could partner Zayne Parekh. Bouchard/Hanifin comp.</div>
+    <div>
+      <div class="conf-label">Moderate — 50%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:50%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">7</div>
+    <div><div class="team-abbr">SEA</div><div class="team-full">Kraken</div></div>
+    <div>
+      <div class="prospect-name">Caleb Malhotra</div>
+      <div class="prospect-meta">C · USNTDP · 6'0" · 185 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Two-way centre with top-6 NHL projection. Can be cornerstone of a contender.</div>
+    <div>
+      <div class="conf-label">Moderate — 48%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:48%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">8</div>
+    <div><div class="team-abbr">STL</div><div class="team-full">Blues</div></div>
+    <div>
+      <div class="prospect-name">Carson Carels</div>
+      <div class="prospect-meta">LD · Moose Jaw (WHL) · 6'1" · 188 lbs</div>
+      <span class="pos-badge d">Defence</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Polished two-way D. Strong defensive awareness and reliable all-around game.</div>
+    <div>
+      <div class="conf-label">Moderate — 46%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:46%"></div></div>
+    </div>
+  </div>
+
+  <!-- TIER 3 -->
+  <div class="tier-label">Tier 3 — Solid first-round talent</div>
+
+  <div class="pick">
+    <div class="pick-num">9</div>
+    <div><div class="team-abbr">SJS</div><div class="team-full">Sharks (via TBL)</div></div>
+    <div>
+      <div class="prospect-name">Ethan Belchetz</div>
+      <div class="prospect-meta">LW · Ottawa (OHL) · 6'3" · 205 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Big, physical winger with top-10 upside. Former top-3 candidate.</div>
+    <div>
+      <div class="conf-label">Speculative — 36%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:36%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">10</div>
+    <div><div class="team-abbr">OTT</div><div class="team-full">Senators</div></div>
+    <div>
+      <div class="prospect-name">Viggo Björck</div>
+      <div class="prospect-meta">C/RW · Djurgårdens (SHL-J) · 6'0" · 178 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Smart, effective Swedish forward. High hockey IQ and two-way capability.</div>
+    <div>
+      <div class="conf-label">Speculative — 33%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:33%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">11</div>
+    <div><div class="team-abbr">NSH</div><div class="team-full">Predators</div></div>
+    <div>
+      <div class="prospect-name">Tynan Lawrence</div>
+      <div class="prospect-meta">C · Windsor (OHL) · 6'0" · 183 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Strong faceoff centre; drives play in both ends. Rising draft boards.</div>
+    <div>
+      <div class="conf-label">Speculative — 31%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:31%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">12</div>
+    <div><div class="team-abbr">WSH</div><div class="team-full">Capitals</div></div>
+    <div>
+      <div class="prospect-name">Ryan Lin</div>
+      <div class="prospect-meta">RD · Boston University (NCAA) · 5'11" · 178 lbs</div>
+      <span class="pos-badge d">Defence</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Most polished player in class per some scouts. Reliable two-way RHD.</div>
+    <div>
+      <div class="conf-label">Speculative — 29%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:29%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">13</div>
+    <div><div class="team-abbr">ANA</div><div class="team-full">Ducks (via DET)</div></div>
+    <div>
+      <div class="prospect-name">Oscar Hemming</div>
+      <div class="prospect-meta">F · Brynäs (SHL-J) · 6'2" · 190 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Big Swedish forward with projectable offensive upside.</div>
+    <div>
+      <div class="conf-label">Speculative — 27%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:27%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">14</div>
+    <div><div class="team-abbr">CBJ</div><div class="team-full">Blue Jackets</div></div>
+    <div>
+      <div class="prospect-name">J.P. Hurlbert</div>
+      <div class="prospect-meta">F · USNTDP · 6'1" · 192 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Physical American forward. Strong at both ends of the ice.</div>
+    <div>
+      <div class="conf-label">Speculative — 26%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:26%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">15</div>
+    <div><div class="team-abbr">PIT</div><div class="team-full">Penguins</div></div>
+    <div>
+      <div class="prospect-name">Oliver Suvanto</div>
+      <div class="prospect-meta">C · TPS (Liiga) · 6'0" · 181 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Finnish centre from Liiga. Effective two-way game with offensive instincts.</div>
+    <div>
+      <div class="conf-label">Speculative — 24%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:24%"></div></div>
+    </div>
+  </div>
+
+  <div class="pick">
+    <div class="pick-num">16</div>
+    <div><div class="team-abbr">LAK</div><div class="team-full">Kings</div></div>
+    <div>
+      <div class="prospect-name">Nikita Klepov</div>
+      <div class="prospect-meta">F · SKA St. Petersburg (MHL) · 6'0" · 176 lbs</div>
+      <span class="pos-badge f">Forward</span>
+    </div>
+    <div style="font-size:12px;color:#7a9bb5;line-height:1.5;">Under-the-radar Russian prospect. Creative playmaker with high hockey IQ.</div>
+    <div>
+      <div class="conf-label">Speculative — 22%</div>
+      <div class="conf-track"><div class="conf-fill" style="width:22%"></div></div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>Note:</strong> Picks 1–16 determined by the NHL Draft Lottery. Toronto won #1, San Jose jumped to #2. Picks 17–32 are slotted as playoff teams are eliminated — Colorado, Vegas, Carolina, and Buffalo/Montreal are still competing and will be assigned picks based on regular-season finish. The 2026 NHL Draft takes place June 26–27 at KeyBank Center in Buffalo.
+  </div>
+
+  <div class="footer">
+    <span>2026 NHL Mock Draft · Generated May 2026</span>
+    <span>Sources: ESPN, Tankathon, DraftProspectsHockey, NHL.com</span>
+  </div>
+
+</div>
+</body>
+</html>
